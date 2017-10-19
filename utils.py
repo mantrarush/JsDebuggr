@@ -54,12 +54,15 @@ def is_valid_scope(view):
 
 def if_valid_scope(fn):
     def wrapper(*args, **kwargs):
-        # NOTE: assumes first arg is 
-        # self for a BreakpointList
-        # TODO - make safer
-        if is_valid_scope(args[0].view):
+        if "view" not in args[0].__dict__:
             return fn(*args, **kwargs)
-        return False
+
+        if "__is_valid_scope" in args[0].__dict__:
+            return fn(*args, **kwargs) if args[0].__is_valid_scope else False
+
+        args[0].__is_valid_scope = is_valid_scope(args[0].view)
+        return wrapper(*args, **kwargs)
+
     return wrapper
 
 def if_should_track(fn):
